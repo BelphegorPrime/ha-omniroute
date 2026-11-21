@@ -33,6 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref || github.ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v7.1.0
@@ -66,12 +69,13 @@ jobs:
           ruff format .
 
       - name: Commit and push changes
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: stefanzweifel/git-auto-commit-action@v7.2.1
         with:
           commit_message: "style: auto-fix and format with Ruff [skip ci]"
           commit_user_name: "faserf-hermes-agent[bot]"
           commit_user_email: "342667397+faserf-hermes-agent[bot]@users.noreply.github.com"
-          push_options: "--force"
+          branch: ${{ github.head_ref || github.ref_name }}
 
       - name: Run Mypy
         run: |

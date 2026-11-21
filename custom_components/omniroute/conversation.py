@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 import uuid
 from collections.abc import AsyncIterable
-from typing import Any
+from typing import Any, Literal
+from homeassistant.const import MATCH_ALL
 
 from homeassistant.components import conversation
 from homeassistant.components.conversation import (
@@ -82,9 +83,9 @@ class OmniRouteConversationEntity(
         self.history: dict[str, list[dict[str, Any]]] = {}
 
     @property
-    def supported_languages(self) -> list[str]:
+    def supported_languages(self) -> list[str] | Literal["*"]:
         """Return supported languages."""
-        return "*"
+        return MATCH_ALL
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Process a conversational input sentence."""

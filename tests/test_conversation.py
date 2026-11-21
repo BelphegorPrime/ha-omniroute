@@ -24,8 +24,7 @@ def omniroute_conversation_entity(mock_config_entry):
 
 def test_supported_languages(omniroute_conversation_entity):
     """Verify that the conversation agent supports all languages."""
-    entity = OmniRouteConversationEntity(mock_config_entry, MagicMock(), MagicMock())
-    assert entity.supported_languages == "*"
+    assert omniroute_conversation_entity.supported_languages == "*"
 
 @pytest.mark.asyncio
 async def test_conversation_setup_entry(hass, mock_config_entry):

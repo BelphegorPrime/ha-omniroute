@@ -64,6 +64,17 @@ def _format_llm_tools(llm_api: Any) -> list[dict[str, Any]]:
     ]
 
 
+def _serialize_tool_result(tool_result: Any) -> str:
+    """Serialize a Home Assistant tool result for the chat completion API."""
+    result_data = getattr(tool_result, "data", tool_result)
+    if getattr(tool_result, "error", False):
+        if isinstance(result_data, dict):
+            result_data = {**result_data, "error": True}
+        else:
+            result_data = {"result": result_data, "error": True}
+    return json.dumps(result_data)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -224,7 +235,7 @@ class OmniRouteConversationEntity(
                         tool_args=fn_args,
                     )
                     tool_res = await llm_api.async_call_tool(tool_input)
-                    tool_content = json.dumps(tool_res)
+                    tool_content = _serialize_tool_result(tool_res)
                 except Exception as err:  # noqa: BLE001
                     LOGGER.warning("Tool execution error for %s: %s", fn_name, err)
                     tool_content = json.dumps({"error": str(err)})
@@ -403,7 +414,7 @@ class OmniRouteConversationEntity(
                         tool_args=fn_args,
                     )
                     tool_res = await llm_api.async_call_tool(tool_input)
-                    tool_content = json.dumps(tool_res)
+                    tool_content = _serialize_tool_result(tool_res)
                 except Exception as err:  # noqa: BLE001
                     LOGGER.warning("Tool execution error for %s: %s", fn_name, err)
                     tool_content = json.dumps({"error": str(err)})

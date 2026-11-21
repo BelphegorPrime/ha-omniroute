@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.components.conversation import MATCH_ALL, ConversationInput
+from homeassistant.helpers import llm
 
 from custom_components.omniroute.const import DOMAIN
 from custom_components.omniroute.conversation import (
@@ -124,7 +125,9 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         mock_api.tools = [tool]
         mock_api.api_prompt = "Use these tools to control exposed Home Assistant devices."
         mock_api.custom_serializer = MagicMock()
-        mock_api.async_call_tool = AsyncMock(return_value={"result": "success"})
+        mock_api.async_call_tool = AsyncMock(
+            return_value=llm.ToolResult(data={"result": "success"})
+        )
         mock_get_api.return_value = mock_api
 
         with patch(
@@ -143,6 +146,11 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         assert mock_client.async_chat_completion.await_args_list[0].kwargs[
             "tools"
         ] is not None
+        tool_message = mock_client.async_chat_completion.await_args_list[1].kwargs[
+            "messages"
+        ][-1]
+        assert tool_message["role"] == "tool"
+        assert json.loads(tool_message["content"]) == {"result": "success"}
         json.dumps(
             mock_client.async_chat_completion.await_args_list[0].kwargs["tools"]
         )

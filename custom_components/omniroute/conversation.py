@@ -84,7 +84,7 @@ class OmniRouteConversationEntity(
     @property
     def supported_languages(self) -> list[str]:
         """Return supported languages."""
-        return ["*"]
+        return "*"
 
     async def async_process(self, user_input: ConversationInput) -> ConversationResult:
         """Process a conversational input sentence."""

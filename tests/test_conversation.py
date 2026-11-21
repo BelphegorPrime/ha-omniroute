@@ -12,6 +12,14 @@ from custom_components.omniroute.conversation import (
 )
 
 
+@pytest.fixture
+def omniroute_conversation_entity(mock_config_entry):
+    """Fixture for OmniRoute conversation entity."""
+    mock_client = MagicMock()
+    mock_coord = MagicMock()
+    return OmniRouteConversationEntity(mock_config_entry, mock_client, mock_coord)
+
+
 def test_supported_languages(omniroute_conversation_entity):
     """Verify that the conversation agent supports all languages."""
     assert omniroute_conversation_entity.supported_languages == MATCH_ALL

@@ -181,7 +181,10 @@ class OmniRouteSensor(CoordinatorEntity[OmniRouteDataUpdateCoordinator], SensorE
         """Return entity specific state attributes."""
         if not self.coordinator.data or not self.entity_description.extra_fn:
             return None
-        return self.entity_description.extra_fn(self.coordinator.data)
+        attrs = self.entity_description.extra_fn(self.coordinator.data)
+        if not attrs:
+            return None
+        return {k: v for k, v in attrs.items() if v is not None}
 
 
 class OmniRouteAutomationSuggestionsSensor(
@@ -206,11 +209,7 @@ class OmniRouteAutomationSuggestionsSensor(
         self._attr_device_info = get_device_info(entry, sw_version)
         self._state = "No Suggestions"
         self._attributes: dict[str, Any] = {
-            "description": None,
-            "yaml_block": None,
-            "last_update": None,
             "entities_processed_count": 0,
-            "model": None,
         }
 
     @property
@@ -221,7 +220,7 @@ class OmniRouteAutomationSuggestionsSensor(
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return suggestions attributes."""
-        return self._attributes
+        return {k: v for k, v in self._attributes.items() if v is not None}
 
     def set_suggestion(
         self,

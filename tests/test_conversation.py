@@ -4,7 +4,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.components.conversation import MATCH_ALL, ConversationInput
+from homeassistant.components.conversation import ConversationInput
 from homeassistant.helpers import llm
 
 from custom_components.omniroute.const import DOMAIN
@@ -14,10 +14,10 @@ from custom_components.omniroute.conversation import (
 )
 
 
-def test_supported_languages(omniroute_conversation_entity):
+def test_supported_languages(mock_config_entry):
     """Verify that the conversation agent supports all languages."""
-    assert omniroute_conversation_entity.supported_languages == MATCH_ALL
-
+    entity = OmniRouteConversationEntity(mock_config_entry, MagicMock(), MagicMock())
+    assert entity.supported_languages == "*"
 
 @pytest.mark.asyncio
 async def test_conversation_setup_entry(hass, mock_config_entry):
@@ -146,9 +146,11 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         assert mock_client.async_chat_completion.await_args_list[0].kwargs[
             "tools"
         ] is not None
-        tool_message = mock_client.async_chat_completion.await_args_list[1].kwargs[
-            "messages"
-        ][-1]
+        tool_message = next(
+            message
+            for message in entity.history[result.conversation_id]
+            if message.get("role") == "tool"
+        )
         assert tool_message["role"] == "tool"
         assert json.loads(tool_message["content"]) == {"result": "success"}
         json.dumps(

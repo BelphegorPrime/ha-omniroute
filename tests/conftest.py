@@ -292,6 +292,7 @@ ha_const.EntityCategory = types.SimpleNamespace(
     DIAGNOSTIC="diagnostic",
     CONFIG="config",
 )
+ha_const.MATCH_ALL = "*"
 
 ha_core: Any = sys.modules["homeassistant.core"]
 ha_core.HomeAssistant = MagicMock
@@ -505,6 +506,7 @@ class MockConversationEntity(MockEntity):
 
 conv_module.ConversationEntity = MockConversationEntity
 conv_module.ConversationEntityFeature = types.SimpleNamespace(CONTROL=1)
+conv_module.MATCH_ALL = "*"
 
 
 @dataclass

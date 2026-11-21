@@ -90,7 +90,7 @@ class OmniRouteAITaskEntity(CoordinatorEntity[OmniRouteDataUpdateCoordinator], E
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
         options = self.entry.options
-        return {
+        attrs: dict[str, Any] = {
             "status": self._state,
             "model": options.get(CONF_AI_TASK_MODEL, DEFAULT_AI_TASK_MODEL),
             "temperature": options.get(
@@ -100,10 +100,14 @@ class OmniRouteAITaskEntity(CoordinatorEntity[OmniRouteDataUpdateCoordinator], E
                 CONF_AI_TASK_MAX_TOKENS, DEFAULT_AI_TASK_MAX_TOKENS
             ),
             "tasks_executed": self._tasks_executed,
-            "last_latency_ms": self._last_latency_ms,
-            "last_model_used": self._last_model_used,
-            "last_task_timestamp": self._last_task_timestamp,
         }
+        if self._last_latency_ms is not None:
+            attrs["last_latency_ms"] = self._last_latency_ms
+        if self._last_model_used is not None:
+            attrs["last_model_used"] = self._last_model_used
+        if self._last_task_timestamp is not None:
+            attrs["last_task_timestamp"] = self._last_task_timestamp
+        return attrs
 
     async def async_execute_task(
         self,

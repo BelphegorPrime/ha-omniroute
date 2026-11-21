@@ -546,6 +546,17 @@ llm_module.LLMContext = MockLLMContext
 llm_module.LLM_API_ASSIST = "assist"
 
 
+@dataclass
+class MockToolResult:
+    """Mirror Home Assistant's non-JSON-serializable ToolResult object."""
+
+    data: dict[str, Any]
+    error: bool = False
+
+
+llm_module.ToolResult = MockToolResult
+
+
 class MockIntentResponse:
     def __init__(self, language: str = "en") -> None:
         self.language = language

@@ -135,4 +135,10 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         assert mock_client.async_chat_completion.await_args_list[0].kwargs[
             "tools"
         ] is not None
+        llm_context = mock_get_api.await_args.args[2]
+        assert llm_context.platform == "omniroute"
+        assert llm_context.assistant == "conversation"
+        assert llm_context.language == user_input.language
+        assert llm_context.device_id == user_input.device_id
+        assert llm_context.agent_id == user_input.agent_id
         mock_api.async_call_tool.assert_called_once()

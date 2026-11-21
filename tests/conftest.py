@@ -529,6 +529,23 @@ class MockConversationResult:
 conv_module.ConversationResult = MockConversationResult
 
 
+@dataclass
+class MockLLMContext:
+    """Mirror the Home Assistant 2026.11 LLMContext signature."""
+
+    platform: str
+    context: Any
+    language: str | None = None
+    assistant: str | None = None
+    device_id: str | None = None
+    agent_id: str | None = None
+
+
+llm_module: Any = sys.modules["homeassistant.helpers.llm"]
+llm_module.LLMContext = MockLLMContext
+llm_module.LLM_API_ASSIST = "assist"
+
+
 class MockIntentResponse:
     def __init__(self, language: str = "en") -> None:
         self.language = language

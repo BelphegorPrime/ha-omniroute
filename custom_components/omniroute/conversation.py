@@ -43,6 +43,27 @@ from .coordinator import OmniRouteDataUpdateCoordinator
 from .helpers import get_device_info
 
 
+def _format_llm_tools(llm_api: Any) -> list[dict[str, Any]]:
+    """Convert Home Assistant tool schemas into JSON-compatible OpenAPI schemas."""
+    import probatio
+
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": probatio.to_openapi(
+                    tool.parameters,
+                    custom_serializer=llm_api.custom_serializer,
+                    openapi_version="3.1.0",
+                ),
+            },
+        }
+        for tool in llm_api.tools
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -123,17 +144,7 @@ class OmniRouteConversationEntity(
                 self.hass, llm.LLM_API_ASSIST, llm_context
             )
             if llm_api and getattr(llm_api, "tools", None):
-                tools = [
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": tool.name,
-                            "description": tool.description,
-                            "parameters": tool.parameters,
-                        },
-                    }
-                    for tool in llm_api.tools
-                ]
+                tools = _format_llm_tools(llm_api)
             if llm_api and llm_api.api_prompt:
                 prompt_str = f"{prompt_str}\n\n{llm_api.api_prompt}"
         except Exception as exc:  # noqa: BLE001
@@ -275,17 +286,7 @@ class OmniRouteConversationEntity(
                 self.hass, llm.LLM_API_ASSIST, llm_context
             )
             if llm_api and getattr(llm_api, "tools", None):
-                tools = [
-                    {
-                        "type": "function",
-                        "function": {
-                            "name": tool.name,
-                            "description": tool.description,
-                            "parameters": tool.parameters,
-                        },
-                    }
-                    for tool in llm_api.tools
-                ]
+                tools = _format_llm_tools(llm_api)
             if llm_api and llm_api.api_prompt:
                 prompt_str = f"{prompt_str}\n\n{llm_api.api_prompt}"
         except Exception as exc:  # noqa: BLE001

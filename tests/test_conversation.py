@@ -1,5 +1,6 @@
 """Test OmniRoute conversation agent."""
 
+import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -116,15 +117,22 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         "homeassistant.helpers.llm.async_get_api", new_callable=AsyncMock
     ) as mock_get_api:
         mock_api = MagicMock()
-        mock_api.tools = [
-            MagicMock(name="HassTurnOn", description="Turn on light", parameters={})
-        ]
+        tool = MagicMock()
+        tool.name = "HassTurnOn"
+        tool.description = "Turn on light"
+        tool.parameters = object()
+        mock_api.tools = [tool]
         mock_api.api_prompt = "Use these tools to control exposed Home Assistant devices."
+        mock_api.custom_serializer = MagicMock()
         mock_api.async_call_tool = AsyncMock(return_value={"result": "success"})
         mock_get_api.return_value = mock_api
 
-        user_input = ConversationInput(text="Turn on kitchen light")
-        result = await entity.async_process(user_input)
+        with patch(
+            "probatio.to_openapi",
+            return_value={"type": "object", "properties": {}},
+        ) as mock_to_openapi:
+            user_input = ConversationInput(text="Turn on kitchen light")
+            result = await entity.async_process(user_input)
 
         assert result.response.speech == "Turned on the kitchen light."
         assert mock_client.async_chat_completion.call_count == 2
@@ -135,6 +143,14 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         assert mock_client.async_chat_completion.await_args_list[0].kwargs[
             "tools"
         ] is not None
+        json.dumps(
+            mock_client.async_chat_completion.await_args_list[0].kwargs["tools"]
+        )
+        mock_to_openapi.assert_called_once_with(
+            tool.parameters,
+            custom_serializer=mock_api.custom_serializer,
+            openapi_version="3.1.0",
+        )
         llm_context = mock_get_api.await_args.args[2]
         assert llm_context.platform == "omniroute"
         assert llm_context.assistant == "conversation"

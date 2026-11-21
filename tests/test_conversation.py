@@ -119,6 +119,7 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         mock_api.tools = [
             MagicMock(name="HassTurnOn", description="Turn on light", parameters={})
         ]
+        mock_api.api_prompt = "Use these tools to control exposed Home Assistant devices."
         mock_api.async_call_tool = AsyncMock(return_value={"result": "success"})
         mock_get_api.return_value = mock_api
 
@@ -127,4 +128,11 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
 
         assert result.response.speech == "Turned on the kitchen light."
         assert mock_client.async_chat_completion.call_count == 2
+        sent_messages = mock_client.async_chat_completion.await_args_list[0].kwargs[
+            "messages"
+        ]
+        assert mock_api.api_prompt in sent_messages[0]["content"]
+        assert mock_client.async_chat_completion.await_args_list[0].kwargs[
+            "tools"
+        ] is not None
         mock_api.async_call_tool.assert_called_once()

@@ -134,8 +134,14 @@ class OmniRouteConversationEntity(
                     }
                     for tool in llm_api.tools
                 ]
+            if llm_api and llm_api.api_prompt:
+                prompt_str = f"{prompt_str}\n\n{llm_api.api_prompt}"
         except Exception as exc:  # noqa: BLE001
-            LOGGER.debug("LLM tools could not be loaded: %s", exc)
+            LOGGER.warning(
+                "Home Assistant tools could not be loaded; conversation will run "
+                "without device control: %s",
+                exc,
+            )
 
         conversation_id = user_input.conversation_id or uuid.uuid4().hex
         prior_messages = self.history.get(conversation_id, [])
@@ -280,8 +286,14 @@ class OmniRouteConversationEntity(
                     }
                     for tool in llm_api.tools
                 ]
+            if llm_api and llm_api.api_prompt:
+                prompt_str = f"{prompt_str}\n\n{llm_api.api_prompt}"
         except Exception as exc:  # noqa: BLE001
-            LOGGER.debug("LLM tools could not be loaded: %s", exc)
+            LOGGER.warning(
+                "Home Assistant tools could not be loaded; conversation will run "
+                "without device control: %s",
+                exc,
+            )
 
         conversation_id = user_input.conversation_id or uuid.uuid4().hex
         prior_messages = self.history.get(conversation_id, [])

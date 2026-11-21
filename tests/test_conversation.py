@@ -10,7 +10,12 @@ from custom_components.omniroute.conversation import (
     OmniRouteConversationEntity,
     async_setup_entry,
 )
+from homeassistant.components.conversation import MATCH_ALL
 
+
+def test_supported_languages(omniroute_conversation_entity):
+    """Verify that the conversation agent supports all languages."""
+    assert omniroute_conversation_entity.supported_languages == MATCH_ALL
 
 @pytest.mark.asyncio
 async def test_conversation_setup_entry(hass, mock_config_entry):

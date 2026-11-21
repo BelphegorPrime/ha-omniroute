@@ -217,9 +217,14 @@ class MockConfigFlow:
 class MockOptionsFlow:
     """Mock OptionsFlow."""
 
-    def __init__(self, config_entry: Any = None) -> None:
-        self.config_entry = config_entry
+    def __init__(self) -> None:
+        self._config_entry: Any = None
         self.hass: Any = None
+
+    @property
+    def config_entry(self) -> Any:
+        """Return the config entry assigned by the flow manager."""
+        return self._config_entry
 
     def async_show_form(
         self,

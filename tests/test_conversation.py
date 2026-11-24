@@ -26,6 +26,7 @@ def test_supported_languages(omniroute_conversation_entity):
     """Verify that the conversation agent supports all languages."""
     assert omniroute_conversation_entity.supported_languages == "*"
 
+
 @pytest.mark.asyncio
 async def test_conversation_setup_entry(hass, mock_config_entry):
     """Test setting up conversation platform."""
@@ -130,7 +131,9 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         tool.description = "Turn on light"
         tool.parameters = object()
         mock_api.tools = [tool]
-        mock_api.api_prompt = "Use these tools to control exposed Home Assistant devices."
+        mock_api.api_prompt = (
+            "Use these tools to control exposed Home Assistant devices."
+        )
         mock_api.custom_serializer = MagicMock()
         mock_api.async_call_tool = AsyncMock(
             return_value=llm.ToolResult(data={"result": "success"})
@@ -150,9 +153,10 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
             "messages"
         ]
         assert mock_api.api_prompt in sent_messages[0]["content"]
-        assert mock_client.async_chat_completion.await_args_list[0].kwargs[
-            "tools"
-        ] is not None
+        assert (
+            mock_client.async_chat_completion.await_args_list[0].kwargs["tools"]
+            is not None
+        )
         tool_message = next(
             message
             for message in entity.history[result.conversation_id]
@@ -160,9 +164,7 @@ async def test_conversation_process_with_tool_calling(hass, mock_config_entry):
         )
         assert tool_message["role"] == "tool"
         assert json.loads(tool_message["content"]) == {"result": "success"}
-        json.dumps(
-            mock_client.async_chat_completion.await_args_list[0].kwargs["tools"]
-        )
+        json.dumps(mock_client.async_chat_completion.await_args_list[0].kwargs["tools"])
         mock_to_openapi.assert_called_once_with(
             tool.parameters,
             custom_serializer=mock_api.custom_serializer,

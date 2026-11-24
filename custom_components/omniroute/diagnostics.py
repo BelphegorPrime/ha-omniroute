@@ -25,9 +25,19 @@ TO_REDACT = {
     CONF_API_KEY,
     "api_key",
     "token",
+    "access_token",
+    "refresh_token",
+    "bearer",
     "authorization",
+    "cookie",
     "password",
     "secret",
+    "email",
+    "host",
+    "url",
+    "v1_url",
+    "root_url",
+    "ip_address",
 }
 
 
@@ -71,17 +81,20 @@ async def async_get_config_entry_diagnostics(
             "pref_disable_new_entities": entry.pref_disable_new_entities,
             "pref_disable_polling": entry.pref_disable_polling,
         },
-        "client": {
-            "v1_url": client.v1_url if client else None,
-            "root_url": client.root_url if client else None,
-            "has_api_key": bool(client and client._api_key),
-        },
+        "client": async_redact_data(
+            {
+                "v1_url": client.v1_url if client else None,
+                "root_url": client.root_url if client else None,
+                "has_api_key": bool(client and client._api_key),
+            },
+            TO_REDACT,
+        ),
     }
 
     if coordinator:
         diag["coordinator"] = {
             "last_update_success": coordinator.last_update_success,
-            "data": _to_json_safe(coordinator.data),
+            "data": async_redact_data(_to_json_safe(coordinator.data), TO_REDACT),
             "models_cached_count": len(coordinator.models),
         }
     else:
